@@ -164,6 +164,7 @@ class YunNet(nn.Module):
 		cost_volume = cost_volume / len(refs)
 		cost_volume = F.upsample(cost_volume, [self.nlabel,target_img.size()[2],target_img.size()[3]], mode='trilinear')
 		cost_volume = torch.squeeze(cost_volume, 1)
+		depth_cost = Variable(torch.FloatTensor(target_img.size()[0], self.nlabel * 2, target_img.size()[2], target_img.size()[3]).zero_()).cuda()
         for i in range(self.nlabel):
             depth_plane = cost_volume[:, i, :, :]
             depth = torch.div(self.nlabel * self.mindepth, (i+1)) / (self.nlabel * self.mindepth)

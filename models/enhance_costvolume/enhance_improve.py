@@ -18,19 +18,18 @@ class SEC(nn.Module):
         )
 
         self.fc = nn.Sequential(
-            nn.Linear(n, n // 4, bias=False),
+            nn.Linear(self.ch, self.ch // 4, bias=False),
             nn.ReLU(inplace = True),
-            nn.Linear(n // 4, n, bias = False),
+            nn.Linear(self.ch // 4, self.ch, bias = False),
             nn.Sigmoid()
         )
 
-    def forward(self, x, cost_volume):
+    def forward(self, x):
         batch_size, ch, h, w = x.size()
         gp = self.gp(x)
         gp = torch.squeeze(torch.squeeze(gp, 2), 2) #[batch, ch]
 
-        fc = self.fc(gp).view([batch_size, ch, 1, 1])
-        output = cost_volume + torch.mul([cost_volume, fc])
+        output = self.fc(gp).view([batch_size, ch, 1, 1])
         return output
 
 class YunNet(nn.Module):
@@ -139,11 +138,10 @@ class YunNet(nn.Module):
 			for i in range(self.nlabel):
 				depth = torch.div(disp2depth, (i+1e-16))
 				ref_fea_t = inverse_warp(ref_fea, depth, pose[:,j], intrinsics4, intrinsics_inv4)
-                cost[:, :target_fea.size()[1], i, :,:] = target_fea
-				cost[:, target_fea.size()[1]:, i, :,:] = ref_fea_t
-
                 correlation = Variable(torch.sqrt((target_fea - ref_fea_t) ** 2 )).cuda()
-                cost[:, :, i, :, :] = self.sec(correlation, cost[:, :, i, :, :])
+                correlation = self.sec(correlation)
+                cost[:, :target_fea.size()[1], i, :,:] = target_fea * correlation + target_fea
+				cost[:, target_fea.size()[1]:, i, :,:] = ref_fea_t * correlation + ref_fea_t
 
 			cost = cost.contiguous()
 			cost0 = self.conv3d0(cost)

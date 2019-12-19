@@ -91,7 +91,7 @@ class YunNet(nn.Module):
 		super(YunNet, self).__init__()
 		self.nlabel = nlabel
 		self.mindepth = mindepth
-		self.cdcor = CDcor(64, 32)
+		self.cdcor = CDcor(32, 32)
 
 		#spp
 		self.feature_extraction = feature_extraction()

@@ -216,8 +216,4 @@ class YunNet(nn.Module):
         target_fea_up = F.upsample(target_fea, [target_img.size()[2],target_img.size()[3]], mode='bilinear')
         costs = torch.cat([target_fea_up, depth0], dim = 1)
         depth = self.convs(costs)
-
-        if self.training:
-            return depth0, depth
-        else:
-            return depth0
+        return depth

@@ -14,7 +14,7 @@ class SED(nn.Module):
         self.ch = channel
 
         self.conv = nn.Sequential(
-            nn.Conv2d(self.ch * 2, self.ch, 1, 1, 0),
+            nn.Conv3d(self.ch * 2, self.ch, 1, 1, 0),
             nn.ReLU(inplace = True)
         )
 
@@ -38,7 +38,7 @@ class SED(nn.Module):
         sum = self.conv(sum)
         depth_gp = self.gp(sum.view(-1, depth, ch, height, width)).view(-1, height * width, depth)
         depth_fc = self.fc(depth_gp).view(-1, 1, depth, height, width)
-        output = depth_w * L + H
+        output = torch.mul(depth_fc, L) + H
         return output
 
 class YunNetTest(nn.Module):
